@@ -3,6 +3,10 @@ use std::{
     path::Path,
 };
 
+use crate::file_extensions::Language;
+
+mod file_extensions;
+
 pub struct MarkItDown {
     content: String,
 }
@@ -41,9 +45,13 @@ impl MarkItDown {
     fn handle_file(&mut self, path: &Path) {
         let content = fs::read_to_string(path).unwrap();
 
-        self.content.push_str(&format!(
-            "{}\n```\n{content}\n```\n\n",
-            path.to_str().unwrap()
-        ));
+        let ext = Language::from_ext(path.extension().unwrap());
+
+        if let Some(ext) = ext {
+            self.content.push_str(&format!(
+                "{}\n```{ext}\n{content}\n```\n\n",
+                path.to_str().unwrap()
+            ));
+        }
     }
 }

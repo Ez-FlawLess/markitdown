@@ -6,7 +6,7 @@ use markitdown::MarkItDown;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    /// Name of the person to greet
+    /// path to the content we want to copy
     #[arg(default_value = ".")]
     path: String,
 }
