@@ -3,6 +3,7 @@ use std::{ffi::OsStr, fmt::Display};
 pub enum Language {
     Rust,
     TOML,
+    LinkerScript,
 }
 
 impl Language {
@@ -12,6 +13,7 @@ impl Language {
         let res = match ext {
             "rs" | "rs.in" => Self::Rust,
             "toml" => Self::TOML,
+            "ld" | "lds" | "x" => Self::LinkerScript,
             _ => return None,
         };
 
@@ -24,6 +26,7 @@ impl Display for Language {
         match self {
             Self::Rust => write!(f, "Rust"),
             Self::TOML => write!(f, "TOML"),
+            Self::LinkerScript => write!(f, "Linker Script"),
         }
     }
 }
