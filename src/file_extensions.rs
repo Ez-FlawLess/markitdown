@@ -1,5 +1,6 @@
 use std::{ffi::OsStr, fmt::Display};
 
+#[allow(clippy::upper_case_acronyms)]
 pub enum Language {
     Rust,
     Python,

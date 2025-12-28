@@ -1,3 +1,5 @@
+#![deny(clippy::unwrap_used)]
+
 use clap::Parser;
 use copypasta::{ClipboardContext, ClipboardProvider};
 use markitdown::MarkItDown;
@@ -14,11 +16,20 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let mut ctx = ClipboardContext::new().unwrap();
+    let mut ctx = match ClipboardContext::new() {
+        Ok(ctx) => ctx,
+        Err(e) => {
+            eprintln!("Failed to initialize clipboard: {}", e);
+            std::process::exit(1);
+        }
+    };
 
     let content = MarkItDown::get_content(&args.path);
 
-    ctx.set_contents(content).unwrap();
+    if let Err(e) = ctx.set_contents(content) {
+        eprintln!("Failed to set clipboard contents: {}", e);
+        std::process::exit(1);
+    }
 
     println!("Content has been copied to your clipboard");
 }

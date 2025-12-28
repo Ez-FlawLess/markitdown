@@ -1,3 +1,5 @@
+#![deny(clippy::unwrap_used)]
+
 use std::{
     fs::{self, ReadDir},
     path::Path,
@@ -20,7 +22,9 @@ impl MarkItDown {
         let path = Path::new(path);
 
         if path.is_dir() {
-            mark.handle_dir(path.read_dir().unwrap());
+            if let Ok(dir) = path.read_dir() {
+                mark.handle_dir(dir);
+            }
         } else if path.is_file() {
             mark.handle_file(path);
         }
@@ -30,12 +34,18 @@ impl MarkItDown {
 
     fn handle_dir(&mut self, dir: ReadDir) {
         for entry in dir {
-            let entry = entry.unwrap();
+            let Ok(entry) = entry else {
+                continue;
+            };
 
-            let file_type = entry.file_type().unwrap();
+            let Ok(file_type) = entry.file_type() else {
+                continue;
+            };
 
             if file_type.is_dir() {
-                self.handle_dir(entry.path().as_path().read_dir().unwrap());
+                if let Ok(sub_dir) = entry.path().as_path().read_dir() {
+                    self.handle_dir(sub_dir);
+                }
             } else if file_type.is_file() {
                 self.handle_file(entry.path().as_path());
             }
@@ -43,15 +53,21 @@ impl MarkItDown {
     }
 
     fn handle_file(&mut self, path: &Path) {
-        let content = fs::read_to_string(path).unwrap();
+        let Ok(content) = fs::read_to_string(path) else {
+            return;
+        };
 
-        let ext = Language::from_ext(path.extension().unwrap());
+        let Some(extension) = path.extension() else {
+            return;
+        };
 
-        if let Some(ext) = ext {
-            self.content.push_str(&format!(
-                "{}\n```{ext}\n{content}\n```\n\n",
-                path.to_str().unwrap()
-            ));
+        let ext = Language::from_ext(extension);
+
+        if let Some(ext) = ext
+            && let Some(path_str) = path.to_str()
+        {
+            self.content
+                .push_str(&format!("{}\n```{ext}\n{content}\n```\n\n", path_str));
         }
     }
 }
